@@ -5,6 +5,7 @@ import org.apache.kafka.streams.kstream.{Consumed, KStream}
 import org.apache.kafka.streams.scala.kstream.Produced
 import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
 import org.apache.kafka.streams.scala.serialization.Serdes
+import com.liwenqiang.util.serdes._
 
 import java.time.Duration
 import java.util.Properties
