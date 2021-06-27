@@ -1,5 +1,6 @@
 package com.liwenqiang
 
+import com.liwenqiang.util.model.Purchase
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.streams.kstream.{Consumed, KStream}
 import org.apache.kafka.streams.scala.kstream.Produced
@@ -22,7 +23,7 @@ object ZMartKafkaStreamsApp {
 
     val purchaseJsonSerializer:JsonSerializer[Purchase] = new JsonSerializer[Purchase]()
 
-    val purchaseJsonDeserializer:JsonDeserializer[Purchase] = new JsonDeserializer[Purchase]()
+    val purchaseJsonDeserializer:JsonDeserializer[Purchase] = new JsonDeserializer[Purchase](Purchase.getClass)
 
     val purchaseSerde: Serdes[Purchase] = Serdes.fromFn(purchaseJsonSerializer, purchaseJsonDeserializer)
 
