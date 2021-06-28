@@ -14,5 +14,8 @@ libraryDependencies ++= Seq(
   "org.apache.camel.kafkaconnector" % "camel-kafka-connector" % "0.10.1",
   "org.apache.kafka" % "connect-api" % "2.8.0",
   "org.apache.kafka" %% "kafka-streams-scala" % "2.8.0",
-  "com.google.code.gson" % "gson" % "2.8.7"
+  "com.google.code.gson" % "gson" % "2.8.7",
+  "org.slf4j" % "slf4j-log4j12" % "2.0.0-alpha1" ,
+  "org.slf4j" % "slf4j-simple" % "2.0.0-alpha1",
+  "org.slf4j" % "slf4j-api" % "2.0.0-alpha1"
 )

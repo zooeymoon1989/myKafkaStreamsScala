@@ -69,12 +69,11 @@ object ZMartKafkaStreamsApp {
     }
     purchaseKStream.split()
       .branch(isCoffee, Branched.withConsumer(_.to("coffee")(Produced.`with`(stringSerde, purchaseSerde))))
-      .branch(isElectronics, Branched.withConsumer(_.to("isElectronics")(Produced.`with`(stringSerde, purchaseSerde))))
+      .branch(isElectronics, Branched.withConsumer(_.to("electronics")(Produced.`with`(stringSerde, purchaseSerde))))
 
     val kafkaStreams = new KafkaStreams(streamsBuilder.build(), props)
 
     kafkaStreams.start()
-
     sys.ShutdownHookThread {
       kafkaStreams.close(Duration.ofSeconds(10))
     }
