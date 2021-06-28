@@ -1,12 +1,12 @@
-package com.liwenqiang.util.serdes
+package com.liwenqiang.util.serializer
 
 import com.google.gson.Gson
 import org.apache.kafka.common.serialization.Deserializer
 
-class JsonDeserializer[Any](deserialized:Class[_]) extends Deserializer[Any]{
+class JsonDeserializer[Any](deserialized:Class[Any]) extends Deserializer[Any]{
 
   private val gson:Gson = new Gson()
-  private val deserializedClass:Class[_] = deserialized
+  private val deserializedClass:Class[Any] = deserialized
 
   override def deserialize(topic: String, data: Array[Byte]): Any ={
     if (data == null) {

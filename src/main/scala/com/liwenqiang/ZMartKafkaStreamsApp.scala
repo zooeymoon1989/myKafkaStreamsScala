@@ -1,12 +1,12 @@
 package com.liwenqiang
 
-import com.liwenqiang.util.model.Purchase
-import org.apache.kafka.common.serialization.Serde
-import org.apache.kafka.streams.kstream.{Consumed, KStream}
+import com.liwenqiang.util.model.{Purchase, PurchasePattern, RewardAccumulator}
+import com.liwenqiang.util.serde.StreamsSerdes
+import org.apache.kafka.common.serialization.{Serde, Serdes}
+import org.apache.kafka.streams.kstream.{Consumed, ForeachAction, KStream, Printed}
 import org.apache.kafka.streams.scala.kstream.Produced
 import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
-import org.apache.kafka.streams.scala.serialization.Serdes
-import com.liwenqiang.util.serdes._
+import com.liwenqiang.util.serializer.{JsonDeserializer, JsonSerializer}
 
 import java.time.Duration
 import java.util.Properties
@@ -23,26 +23,25 @@ object ZMartKafkaStreamsApp {
 
     val purchaseJsonSerializer:JsonSerializer[Purchase] = new JsonSerializer[Purchase]()
 
-    val purchaseJsonDeserializer:JsonDeserializer[Purchase] = new JsonDeserializer[Purchase](Purchase.getClass)
+    val purchaseJsonDeserializer:JsonDeserializer[Purchase] = new JsonDeserializer[Purchase](classOf[Purchase])
 
-    val purchaseSerde: Serdes[Purchase] = Serdes.fromFn(purchaseJsonSerializer, purchaseJsonDeserializer)
+    val purchaseSerde: Serde[Purchase] = Serdes.serdeFrom(purchaseJsonSerializer,purchaseJsonDeserializer)
 
-    val stringSerde: Serde[String] = Serdes.stringSerde
+    val stringSerde: Serde[String] = Serdes.String()
 
     val streamsBuilder:StreamsBuilder = new StreamsBuilder
 
     val purchaseKStream: KStream[String, Purchase] = streamsBuilder.stream("transactions", Consumed.`with`(stringSerde, purchaseSerde))
-      .mapValues(p => Purchase.builder(p).maskcreditCard().build())
+      .mapValues(p => Purchase.builder(p).maskCreditCard().build())
+    val patternKStream: KStream[String, PurchasePattern] = purchaseKStream.mapValues(purchase => PurchasePattern.builder(purchase).build())
 
-    val patternKStream: KStream[String, PurchasePattern] = purchaseKStream.mapValues(purchase => PurchasePattern.builder(purchase))
-
-    patternKStream.to("patterns",Produced.`with`(stringSerde,purchasePatternSerde))
+    patternKStream.to("patterns",Produced.`with`(stringSerde,StreamsSerdes.PurchasePatternSerde))
 
     val rewardsKStream: KStream[String, RewardAccumulator] = purchaseKStream.mapValues(purchase => RewardAccumulator.builder(purchase).build())
 
-    rewardsKStream.to("rewards",Produced.`with`(stringSerde,rewardAccumulatorSerde))
+    rewardsKStream.to("rewards",Produced.`with`(stringSerde,StreamsSerdes.RewardAccumulatorSerde))
 
-    rewardsKStream.to("purchases",Produced.`with`(stringSerde,purchaseSerde))
+    purchaseKStream.to("purchases",Produced.`with`(stringSerde,StreamsSerdes.PurchaseSerde))
 
     val kafkaStreams = new KafkaStreams(streamsBuilder.build(),props)
 

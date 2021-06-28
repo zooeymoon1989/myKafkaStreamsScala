@@ -1,4 +1,4 @@
-package com.liwenqiang.util.serdes
+package com.liwenqiang.util.serializer
 
 import com.google.gson.Gson
 import org.apache.kafka.common.serialization.Serializer
