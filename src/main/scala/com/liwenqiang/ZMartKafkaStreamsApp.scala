@@ -3,8 +3,8 @@ package com.liwenqiang
 import com.liwenqiang.util.model.{Purchase, PurchasePattern, RewardAccumulator}
 import com.liwenqiang.util.serde.StreamsSerdes
 import org.apache.kafka.common.serialization.{Serde, Serdes}
-import org.apache.kafka.streams.kstream.{Consumed, KStream, Printed}
-import org.apache.kafka.streams.scala.kstream.Produced
+import org.apache.kafka.streams.kstream.{BranchedKStream, Consumed, KStream, Predicate, Printed}
+import org.apache.kafka.streams.scala.kstream.{Branched, Produced}
 import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
 import com.liwenqiang.util.serializer.{JsonDeserializer, JsonSerializer}
 
@@ -56,6 +56,20 @@ object ZMartKafkaStreamsApp {
 
     filteredKStream.print(Printed.toSysOut[Long,Purchase].withLabel("purchase"))
     filteredKStream.to("purchases", Produced.`with`(longSerde, StreamsSerdes.PurchaseSerde))
+
+    val isCoffee:Predicate[String,Purchase] = {
+      (key:String,purchase:Purchase) => {
+        purchase.getDepartment.equalsIgnoreCase("coffee")
+      }
+    }
+    val isElectronics:Predicate[String,Purchase] = {
+      (key:String,purchase:Purchase) => {
+        purchase.getDepartment.equalsIgnoreCase("electronics")
+      }
+    }
+    purchaseKStream.split()
+      .branch(isCoffee, Branched.withConsumer(_.to("coffee")(Produced.`with`(stringSerde, purchaseSerde))))
+      .branch(isElectronics, Branched.withConsumer(_.to("isElectronics")(Produced.`with`(stringSerde, purchaseSerde))))
 
     val kafkaStreams = new KafkaStreams(streamsBuilder.build(), props)
 
