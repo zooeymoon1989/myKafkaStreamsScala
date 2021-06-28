@@ -71,6 +71,13 @@ object ZMartKafkaStreamsApp {
       .branch(isCoffee, Branched.withConsumer(_.to("coffee")(Produced.`with`(stringSerde, purchaseSerde))))
       .branch(isElectronics, Branched.withConsumer(_.to("electronics")(Produced.`with`(stringSerde, purchaseSerde))))
 
+
+    purchaseKStream.filter(
+      (key:String,purchase:Purchase) => {
+        purchase.getEmployeeId.equals("000000")
+      }
+    ).foreach((key:String,purchase:Purchase) => {})
+
     val kafkaStreams = new KafkaStreams(streamsBuilder.build(), props)
 
     kafkaStreams.start()
