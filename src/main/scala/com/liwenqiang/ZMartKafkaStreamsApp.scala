@@ -1,14 +1,16 @@
 package com.liwenqiang
 
 import com.liwenqiang.partitioner.RewardsStreamPartitioner
+import com.liwenqiang.supplier.PurchaseRewardTransformerSupplier
 import com.liwenqiang.transformer.PurchaseRewardTransformer
 import com.liwenqiang.util.model.{Purchase, PurchasePattern, RewardAccumulator}
 import com.liwenqiang.util.serde.StreamsSerdes
 import org.apache.kafka.common.serialization.{Serde, Serdes}
-import org.apache.kafka.streams.kstream.{Consumed, KStream, Predicate, Printed, Repartitioned, ValueTransformerSupplier}
+import org.apache.kafka.streams.kstream.{Consumed, KStream, Predicate, Printed, Repartitioned, ValueTransformer, ValueTransformerSupplier}
 import org.apache.kafka.streams.scala.kstream.{Branched, Produced}
 import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
 import com.liwenqiang.util.serializer.{JsonDeserializer, JsonSerializer}
+import org.apache.kafka.streams.processor.ProcessorContext
 
 import java.time.Duration
 import java.util.Properties
@@ -54,9 +56,9 @@ object ZMartKafkaStreamsApp {
     //自定义分片
     val rewardsStreamPartitioner = new RewardsStreamPartitioner()
 //    val transByCustomerStream: KStream[String, Purchase] = purchaseKStream.through("foobar",Produced.`with`(stringSerde,StreamsSerdes.PurchaseSerde))
-    val transByCustomerStream: KStream[String, Purchase] = purchaseKStream.repartition(new Repartitioned[String, Purchase]())
-
-    transByCustomerStream.transformValues()
+    val transByCustomerStream: KStream[String, Purchase] = purchaseKStream.repartition()
+//
+//    transByCustomerStream.transformValues(new PurchaseRewardTransformerSupplier)
     rewardsKStream.print(Printed.toSysOut[String,RewardAccumulator].withLabel("purchase"))
     rewardsKStream.to("rewards", Produced.`with`(stringSerde, StreamsSerdes.RewardAccumulatorSerde))
 

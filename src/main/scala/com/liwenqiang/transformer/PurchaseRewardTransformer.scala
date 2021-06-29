@@ -1,7 +1,7 @@
 package com.liwenqiang.transformer
 
 import com.liwenqiang.util.model.{Purchase, RewardAccumulator}
-import org.apache.kafka.streams.kstream.ValueTransformer
+import org.apache.kafka.streams.kstream.{ValueTransformer, ValueTransformerSupplier}
 import org.apache.kafka.streams.processor.ProcessorContext
 import org.apache.kafka.streams.state.KeyValueStore
 
@@ -21,7 +21,7 @@ class PurchaseRewardTransformer(sn: String) extends ValueTransformer[Purchase, R
     this.stateStore = this.context.getStateStore(storeName)
   }
 
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings(Array("deprecation"))
   def punctuate(timestamp: Long): RewardAccumulator = {
     null
   }
