@@ -2,17 +2,17 @@ package com.liwenqiang
 
 import com.liwenqiang.partitioner.RewardsStreamPartitioner
 import com.liwenqiang.supplier.PurchaseRewardTransformerSupplier
-import com.liwenqiang.transformer.PurchaseRewardTransformer
 import com.liwenqiang.util.model.{Purchase, PurchasePattern, RewardAccumulator}
 import com.liwenqiang.util.serde.StreamsSerdes
 import org.apache.kafka.common.serialization.{Serde, Serdes}
-import org.apache.kafka.streams.kstream.{Consumed, KStream, Predicate, Printed, Repartitioned, ValueTransformer, ValueTransformerSupplier}
+import org.apache.kafka.streams.kstream.{Consumed, KStream, Predicate, Printed}
 import org.apache.kafka.streams.scala.kstream.{Branched, Produced}
 import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
 import com.liwenqiang.util.serializer.{JsonDeserializer, JsonSerializer}
-import org.apache.kafka.streams.processor.ProcessorContext
+import org.apache.kafka.streams.state.{KeyValueBytesStoreSupplier, KeyValueStore, StoreBuilder, Stores}
 
 import java.time.Duration
+import java.util
 import java.util.Properties
 
 object ZMartKafkaStreamsApp {
@@ -24,6 +24,23 @@ object ZMartKafkaStreamsApp {
       p.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
       p
     }
+
+    // 添加state store
+    // 想streamBuilder里面添加state store
+    val builder = new StreamsBuilder()
+    //这个是state store的名称，以后直接调用这个string就OK了
+    val rewardsStateStoreName = "rewardsPointsStore"
+    val storeSupplier: KeyValueBytesStoreSupplier = Stores.inMemoryKeyValueStore(rewardsStateStoreName)
+    val storeBuilder: StoreBuilder[KeyValueStore[String, Integer]] = Stores.keyValueStoreBuilder(storeSupplier, Serdes.StringSerde, Serdes.IntegerSerde)
+    // 在store builder中添加配置
+    // 设置一个保存2天，10gb的日志配置
+    val changeLogConfigs = new util.HashMap[String, String]()
+    changeLogConfigs.put("retentions.ms","172800000")
+    changeLogConfigs.put("retentions.bytes","")
+    //清理日志方法
+    changeLogConfigs.put("cleanup.policy", "compact,delete")
+    storeBuilder.withLoggingEnabled(changeLogConfigs)
+    builder.addStateStore(storeBuilder)
 
     val purchaseJsonSerializer: JsonSerializer[Purchase] = new JsonSerializer[Purchase]()
 
@@ -57,7 +74,7 @@ object ZMartKafkaStreamsApp {
     val rewardsStreamPartitioner = new RewardsStreamPartitioner()
 //    val transByCustomerStream: KStream[String, Purchase] = purchaseKStream.through("foobar",Produced.`with`(stringSerde,StreamsSerdes.PurchaseSerde))
     val transByCustomerStream: KStream[String, Purchase] = purchaseKStream.repartition()
-//
+
     transByCustomerStream.transformValues(new PurchaseRewardTransformerSupplier("foobar"))
     rewardsKStream.print(Printed.toSysOut[String,RewardAccumulator].withLabel("purchase"))
     rewardsKStream.to("rewards", Produced.`with`(stringSerde, StreamsSerdes.RewardAccumulatorSerde))
