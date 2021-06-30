@@ -82,6 +82,7 @@ object ZMartKafkaStreamsApp {
     filteredKStream.print(Printed.toSysOut[Long,Purchase].withLabel("purchase"))
     filteredKStream.to("purchases", Produced.`with`(longSerde, StreamsSerdes.PurchaseSerde))
 
+    // predict
     val isCoffee:Predicate[String,Purchase] = {
       (key:String,purchase:Purchase) => {
         purchase.getDepartment.equalsIgnoreCase("coffee")
@@ -92,6 +93,7 @@ object ZMartKafkaStreamsApp {
         purchase.getDepartment.equalsIgnoreCase("electronics")
       }
     }
+
     purchaseKStream.split()
       .branch(isCoffee, Branched.withConsumer(_.to("coffee")(Produced.`with`(stringSerde, purchaseSerde))))
       .branch(isElectronics, Branched.withConsumer(_.to("electronics")(Produced.`with`(stringSerde, purchaseSerde))))
