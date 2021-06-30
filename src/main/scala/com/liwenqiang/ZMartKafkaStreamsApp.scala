@@ -31,7 +31,7 @@ object ZMartKafkaStreamsApp {
     //这个是state store的名称，以后直接调用这个string就OK了
     val rewardsStateStoreName = "rewardsPointsStore"
     val storeSupplier: KeyValueBytesStoreSupplier = Stores.inMemoryKeyValueStore(rewardsStateStoreName)
-    val storeBuilder: StoreBuilder[KeyValueStore[String, Integer]] = Stores.keyValueStoreBuilder(storeSupplier, Serdes.StringSerde, Serdes.IntegerSerde)
+    val storeBuilder: StoreBuilder[KeyValueStore[String, Integer]] = Stores.keyValueStoreBuilder(storeSupplier, Serdes.String(), Serdes.Integer())
     // 在store builder中添加配置
     // 设置一个保存2天，10gb的日志配置
     val changeLogConfigs = new util.HashMap[String, String]()
