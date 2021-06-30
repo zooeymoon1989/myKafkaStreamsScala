@@ -58,7 +58,7 @@ object ZMartKafkaStreamsApp {
 //    val transByCustomerStream: KStream[String, Purchase] = purchaseKStream.through("foobar",Produced.`with`(stringSerde,StreamsSerdes.PurchaseSerde))
     val transByCustomerStream: KStream[String, Purchase] = purchaseKStream.repartition()
 //
-//    transByCustomerStream.transformValues(new PurchaseRewardTransformerSupplier)
+    transByCustomerStream.transformValues(new PurchaseRewardTransformerSupplier("foobar"))
     rewardsKStream.print(Printed.toSysOut[String,RewardAccumulator].withLabel("purchase"))
     rewardsKStream.to("rewards", Produced.`with`(stringSerde, StreamsSerdes.RewardAccumulatorSerde))
 
