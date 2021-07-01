@@ -1,12 +1,14 @@
 package com.liwenqiang
 
+import com.liwenqiang.config.branchStreamConstant
+import com.liwenqiang.joiner.PurchaseJoiner
 import com.liwenqiang.partitioner.RewardsStreamPartitioner
 import com.liwenqiang.supplier.PurchaseRewardTransformerSupplier
-import com.liwenqiang.util.model.{Purchase, PurchasePattern, RewardAccumulator}
+import com.liwenqiang.util.model.{CorrelatedPurchase, Purchase, PurchasePattern, RewardAccumulator}
 import com.liwenqiang.util.serde.StreamsSerdes
 import org.apache.kafka.common.serialization.{Serde, Serdes}
-import org.apache.kafka.streams.kstream.{Consumed, KStream, Predicate, Printed}
-import org.apache.kafka.streams.scala.kstream.{Branched, Produced}
+import org.apache.kafka.streams.kstream.{BranchedKStream, Consumed, JoinWindows, KStream, KeyValueMapper, Predicate, Printed}
+import org.apache.kafka.streams.scala.kstream.{Branched, Joined, Produced, StreamJoined}
 import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
 import com.liwenqiang.util.serializer.{JsonDeserializer, JsonSerializer}
 import org.apache.kafka.streams.state.{KeyValueBytesStoreSupplier, KeyValueStore, StoreBuilder, Stores}
@@ -73,9 +75,9 @@ object ZMartKafkaStreamsApp {
     //自定义分片
     val rewardsStreamPartitioner = new RewardsStreamPartitioner()
 //    val transByCustomerStream: KStream[String, Purchase] = purchaseKStream.through("foobar",Produced.`with`(stringSerde,StreamsSerdes.PurchaseSerde))
-    val transByCustomerStream: KStream[String, Purchase] = purchaseKStream.repartition()
-
-    transByCustomerStream.transformValues(new PurchaseRewardTransformerSupplier("foobar"))
+    val transByCustomerStream: KStream[String, RewardAccumulator] = purchaseKStream
+      .repartition().
+      transformValues(new PurchaseRewardTransformerSupplier(rewardsStateStoreName))
     rewardsKStream.print(Printed.toSysOut[String,RewardAccumulator].withLabel("purchase"))
     rewardsKStream.to("rewards", Produced.`with`(stringSerde, StreamsSerdes.RewardAccumulatorSerde))
 
@@ -94,10 +96,26 @@ object ZMartKafkaStreamsApp {
       }
     }
 
-    purchaseKStream.split()
-      .branch(isCoffee, Branched.withConsumer(_.to("coffee")(Produced.`with`(stringSerde, purchaseSerde))))
+    val branchStream: util.Map[String, KStream[String, Purchase]] = purchaseKStream.selectKey(new KeyValueMapper[String,Purchase,String]{
+      override def apply(key: String, value: Purchase): String = {
+        value.getCustomerId
+      }
+    }).split()
+      .branch(isCoffee, Branched.withConsumer(_.to("coffee")(Produced.`with`(Serdes.String(), purchaseSerde))))
       .branch(isElectronics, Branched.withConsumer(_.to("electronics")(Produced.`with`(stringSerde, purchaseSerde))))
+      .noDefaultBranch()
+    val coffeeStream: KStream[String, Purchase] = branchStream.get("coffee")
+    val electronicsStream: KStream[String, Purchase] = branchStream.get("electronics")
 
+    val purchaseJoiner = new PurchaseJoiner()
+
+    val twentyMinuteWindow: JoinWindows = JoinWindows.of(Duration.ofMinutes(20))
+
+    val joinedKStream: KStream[String, CorrelatedPurchase] = coffeeStream.join(electronicsStream
+      , purchaseJoiner
+      , twentyMinuteWindow
+      , new StreamJoined[String, Purchase, Purchase]()
+    )
 
     purchaseKStream.filter(
       (key:String,purchase:Purchase) => {
