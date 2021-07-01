@@ -1,16 +1,18 @@
 package com.liwenqiang
 
-import com.liwenqiang.config.branchStreamConstant
 import com.liwenqiang.joiner.PurchaseJoiner
 import com.liwenqiang.partitioner.RewardsStreamPartitioner
 import com.liwenqiang.supplier.PurchaseRewardTransformerSupplier
 import com.liwenqiang.util.model.{CorrelatedPurchase, Purchase, PurchasePattern, RewardAccumulator}
 import com.liwenqiang.util.serde.StreamsSerdes
+import com.liwenqiang.util.serde.StreamsSerdes.{PurchasePatternSerde, PurchaseSerde}
 import org.apache.kafka.common.serialization.{Serde, Serdes}
-import org.apache.kafka.streams.kstream.{BranchedKStream, Consumed, JoinWindows, KStream, KeyValueMapper, Predicate, Printed}
+import org.apache.kafka.streams.kstream.{Consumed, JoinWindows, KStream, KeyValueMapper, Predicate, Printed}
 import org.apache.kafka.streams.scala.kstream.{Branched, Joined, Produced, StreamJoined}
 import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
 import com.liwenqiang.util.serializer.{JsonDeserializer, JsonSerializer}
+import org.apache.kafka.streams.scala.serialization.Serdes.stringSerde
+import org.apache.kafka.streams.state.internals.InMemoryWindowBytesStoreSupplier
 import org.apache.kafka.streams.state.{KeyValueBytesStoreSupplier, KeyValueStore, StoreBuilder, Stores}
 
 import java.time.Duration
@@ -48,7 +50,7 @@ object ZMartKafkaStreamsApp {
 
     val purchaseJsonDeserializer: JsonDeserializer[Purchase] = new JsonDeserializer[Purchase](classOf[Purchase])
 
-    val purchaseSerde: Serde[Purchase] = Serdes.serdeFrom(purchaseJsonSerializer, purchaseJsonDeserializer)
+    val purchaseSerde: Serde[Purchase] = StreamsSerdes.PurchaseSerde
 
     val stringSerde: Serde[String] = Serdes.String()
 
@@ -111,11 +113,15 @@ object ZMartKafkaStreamsApp {
 
     val twentyMinuteWindow: JoinWindows = JoinWindows.of(Duration.ofMinutes(20))
 
+    val joins: StreamJoined[String, Purchase, Purchase] = StreamJoined.`with`(stringSerde,purchaseSerde,purchaseSerde)
+//    val a = new StreamJoined[String,Purchase,Purchase]
     val joinedKStream: KStream[String, CorrelatedPurchase] = coffeeStream.join(electronicsStream
       , purchaseJoiner
       , twentyMinuteWindow
-      , new StreamJoined[String, Purchase, Purchase]()
+      , joins
     )
+
+    joinedKStream.print(Printed.toSysOut[String,CorrelatedPurchase].withLabel("joinedStream"))
 
     purchaseKStream.filter(
       (key:String,purchase:Purchase) => {
