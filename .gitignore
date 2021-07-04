@@ -5,5 +5,5 @@ project/target/
 target/
 /target/
 /project/target/
-/project/
+/project/*
 /logs/
