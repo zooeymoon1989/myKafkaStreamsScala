@@ -255,6 +255,11 @@ public class Purchase {
             return this;
         }
 
+        public Builder quanity(int val) {
+            quantity = val;
+            return this;
+        }
+
         public Purchase build() {
             return new Purchase(this);
         }

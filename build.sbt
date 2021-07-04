@@ -17,5 +17,6 @@ libraryDependencies ++= Seq(
   "com.google.code.gson" % "gson" % "2.8.7",
   "org.slf4j" % "slf4j-log4j12" % "2.0.0-alpha1" ,
   "org.slf4j" % "slf4j-simple" % "2.0.0-alpha1",
-  "org.slf4j" % "slf4j-api" % "2.0.0-alpha1"
+  "org.slf4j" % "slf4j-api" % "2.0.0-alpha1",
+  "com.github.javafaker" % "javafaker" % "1.0.2"
 )
