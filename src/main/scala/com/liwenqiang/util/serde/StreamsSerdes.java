@@ -3,6 +3,7 @@ package com.liwenqiang.util.serde;
 import com.liwenqiang.util.model.Purchase;
 import com.liwenqiang.util.model.PurchasePattern;
 import com.liwenqiang.util.model.RewardAccumulator;
+import com.liwenqiang.util.model.StockTickerData;
 import com.liwenqiang.util.serializer.JsonDeserializer;
 import com.liwenqiang.util.serializer.JsonSerializer;
 import org.apache.kafka.common.serialization.Serde;
@@ -21,7 +22,15 @@ public class StreamsSerdes {
         return new PurchaseSerde();
     }
 
+    public static final class StockTickerSerde extends Serdes.WrapperSerde<StockTickerData> {
+        public StockTickerSerde() {
+            super(new JsonSerializer<>(), new JsonDeserializer<>(StockTickerData.class));
+        }
+    }
 
+    public static Serde<StockTickerData> StockTickerSerde() {
+        return  new StockTickerSerde();
+    }
     public static final class PurchasePatternsSerde extends Serdes.WrapperSerde<PurchasePattern> {
         public PurchasePatternsSerde() {
             super(new JsonSerializer<>(), new JsonDeserializer<>(PurchasePattern.class));
