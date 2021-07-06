@@ -1,5 +1,7 @@
 package com.liwenqiang
 
+import com.liwenqiang.clients.producer.MockDataProducer
+import com.liwenqiang.config.initConfig.InitGetProperties
 import com.liwenqiang.joiner.PurchaseJoiner
 import com.liwenqiang.util.model.{CorrelatedPurchase, Purchase}
 import com.liwenqiang.util.serde.StreamsSerdes
@@ -18,7 +20,7 @@ import java.util
 
 object KafkaStreamsJoinsApp {
   def main(args: Array[String]): Unit = {
-    val streamsConfig = new StreamsConfig(getProperties)
+//    val streamsConfig = new StreamsConfig(getProperties)
     val builder: StreamsBuilder = new StreamsBuilder()
     val purchaseSerde: Serde[Purchase] = StreamsSerdes.PurchaseSerde
     val stringSerde: Serde[String] = Serdes.String()
@@ -59,31 +61,34 @@ object KafkaStreamsJoinsApp {
     )
 
     joinedStream.print(Printed.toSysOut.asInstanceOf[Printed[String, CorrelatedPurchase]].withLabel("joined KStream"))
-
-    val kafkaStreams = new KafkaStreams(builder.build(), getProperties)
+    MockDataProducer.producePurchaseData()
+    val kafkaStreams = new KafkaStreams(builder.build(),new InitGetProperties("new").GetProperties)
 
     kafkaStreams.start()
-    sys.ShutdownHookThread {
-      kafkaStreams.close(Duration.ofSeconds(10))
-    }
+    Thread.sleep(65000)
+    kafkaStreams.close()
+//    sys.ShutdownHookThread {
+//      kafkaStreams.close(Duration.ofSeconds(10))
+//    }
+    MockDataProducer.shutdown()
   }
 
 
-  private def getProperties = {
-    val props = new Properties()
-    props.put(StreamsConfig.APPLICATION_ID_CONFIG, UUID.randomUUID().toString)
-    props.put(ConsumerConfig.GROUP_ID_CONFIG, "join_driver_group")
-    props.put(ConsumerConfig.CLIENT_ID_CONFIG, "join_driver_client")
-    props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest")
-    props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "5000")
-    props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
-    props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, "1")
-    props.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, "10000")
-    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-    props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1)
-    props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, TransactionTimestampExtractor)
-    props
-  }
+//  private def getProperties = {
+//    val props = new Properties()
+//    props.put(StreamsConfig.APPLICATION_ID_CONFIG, UUID.randomUUID().toString)
+//    props.put(ConsumerConfig.GROUP_ID_CONFIG, "join_driver_group")
+//    props.put(ConsumerConfig.CLIENT_ID_CONFIG, "join_driver_client")
+//    props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest")
+//    props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "5000")
+//    props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+//    props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, "1")
+//    props.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, "10000")
+//    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
+//    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
+//    props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1)
+//    props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, TransactionTimestampExtractor.getClass.getName)
+//    props
+//  }
 
 }
