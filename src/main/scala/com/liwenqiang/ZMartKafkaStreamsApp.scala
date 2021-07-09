@@ -5,14 +5,11 @@ import com.liwenqiang.partitioner.RewardsStreamPartitioner
 import com.liwenqiang.supplier.PurchaseRewardTransformerSupplier
 import com.liwenqiang.util.model.{CorrelatedPurchase, Purchase, PurchasePattern, RewardAccumulator}
 import com.liwenqiang.util.serde.StreamsSerdes
-import com.liwenqiang.util.serde.StreamsSerdes.{PurchasePatternSerde, PurchaseSerde}
+import com.liwenqiang.util.serializer.{JsonDeserializer, JsonSerializer}
 import org.apache.kafka.common.serialization.{Serde, Serdes}
 import org.apache.kafka.streams.kstream.{Consumed, JoinWindows, KStream, KeyValueMapper, Predicate, Printed}
-import org.apache.kafka.streams.scala.kstream.{Branched, Joined, Produced, StreamJoined}
+import org.apache.kafka.streams.scala.kstream.{Branched, Produced, StreamJoined}
 import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
-import com.liwenqiang.util.serializer.{JsonDeserializer, JsonSerializer}
-import org.apache.kafka.streams.scala.serialization.Serdes.stringSerde
-import org.apache.kafka.streams.state.internals.InMemoryWindowBytesStoreSupplier
 import org.apache.kafka.streams.state.{KeyValueBytesStoreSupplier, KeyValueStore, StoreBuilder, Stores}
 
 import java.time.Duration

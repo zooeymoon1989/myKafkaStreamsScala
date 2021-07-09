@@ -1,5 +1,6 @@
 package com.liwenqiang.util.serde;
 
+import com.liwenqiang.collectors.FixedSizePriorityQueue;
 import com.liwenqiang.util.model.*;
 import com.liwenqiang.util.serializer.JsonDeserializer;
 import com.liwenqiang.util.serializer.JsonSerializer;
@@ -21,6 +22,16 @@ public class StreamsSerdes {
 
     public static Serde<StockTransaction> StockTransactionSerde() {
         return new StockTransactionSerde();
+    }
+
+    public static Serde<FixedSizePriorityQueue> FixedSizePriorityQueueSerde() {
+        return new FixedSizePriorityQueueSerde();
+    }
+
+    public static final class FixedSizePriorityQueueSerde extends Serdes.WrapperSerde<FixedSizePriorityQueue> {
+        public FixedSizePriorityQueueSerde() {
+            super(new JsonSerializer<>(), new JsonDeserializer<>(FixedSizePriorityQueue.class));
+        }
     }
 
     public static final class StockTransactionSerde extends Serdes.WrapperSerde<StockTransaction> {
