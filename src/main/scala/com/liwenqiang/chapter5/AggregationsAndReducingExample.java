@@ -55,7 +55,7 @@ public class AggregationsAndReducingExample {
                 Consumed.with(stringSerde, stockTransactionSerde)
                         .withOffsetResetPolicy(EARLIEST))
                 .mapValues(st -> ShareVolume.newBuilder(st).build())
-                .groupBy((k, v) -> v.getSymbol(), Serialized.with(stringSerde, shareVolumeSerde))
+                .groupBy((k, v) -> v.getSymbol(), Grouped.with(stringSerde, shareVolumeSerde))
                 .reduce(ShareVolume::sum);
 
 
