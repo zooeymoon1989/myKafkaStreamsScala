@@ -23,7 +23,7 @@ import static org.apache.kafka.streams.Topology.AutoOffsetReset.EARLIEST;
 
 @SuppressWarnings("unchecked")
 public class AggregationsAndReducingExample {
-    private static Logger LOG = LoggerFactory.getLogger(AggregationsAndReducingExample.class);
+//    private static Logger LOG = LoggerFactory.getLogger(AggregationsAndReducingExample.class);
 
     public static void main(String[] args) throws Exception {
         Serde<String> stringSerde = Serdes.String();
@@ -59,22 +59,23 @@ public class AggregationsAndReducingExample {
                 .reduce(ShareVolume::sum);
 
 
-        shareVolume.groupBy((k, v) -> KeyValue.pair(v.getIndustry(), v), Serialized.with(stringSerde, shareVolumeSerde))
+        shareVolume.groupBy((k, v) -> KeyValue.pair(v.getIndustry(), v), Grouped.with(stringSerde, shareVolumeSerde))
                 .aggregate(() -> fixedQueue,
                         (k, v, agg) -> agg.add(v),
                         (k, v, agg) -> agg.remove(v),
                         Materialized.with(stringSerde, fixedSizePriorityQueueSerde))
                 .mapValues(valueMapper)
-                .toStream().peek((k, v) -> LOG.info("Stock volume by industry {} {}", k, v))
+                .toStream().peek((k, v) -> System.out.printf("Stock volume by industry %s %s\n", k, v))
                 .to("stock-volume-by-company", Produced.with(stringSerde, stringSerde));
 
 
         KafkaStreams kafkaStreams = new KafkaStreams(builder.build(), new InitGetProperties("AggregationsAndReducingExample").GetProperties());
         MockDataProducer.produceStockTransactions(15, 50, 25, false);
-        LOG.info("First Reduction and Aggregation Example Application Started");
+        System.out.println("First Reduction and Aggregation Example Application Started");
+        kafkaStreams.cleanUp();
         kafkaStreams.start();
         Thread.sleep(65000);
-        LOG.info("Shutting down the Reduction and Aggregation Example Application now");
+        System.out.println("Shutting down the Reduction and Aggregation Example Application now");
         kafkaStreams.close();
         MockDataProducer.shutdown();
     }

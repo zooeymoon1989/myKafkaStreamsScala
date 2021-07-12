@@ -58,14 +58,14 @@ public class MockDataProducer {
                     ProducerRecord<String, String> record = new ProducerRecord<>(TRANSACTIONS_TOPIC, null, value);
                     producer.send(record, callback);
                 }
-                LOG.info("Record batch sent");
+                System.out.println("Record batch sent");
                 try {
                     Thread.sleep(6000);
                 } catch (InterruptedException e) {
                     Thread.interrupted();
                 }
             }
-            LOG.info("Done generating purchase data");
+            System.out.println("Done generating purchase data");
 
         };
         executorService.submit(generateTask);
@@ -91,7 +91,7 @@ public class MockDataProducer {
                     ProducerRecord<String, String> record = new ProducerRecord<>(Topics.POPS_HOPS_PURCHASES.topicName(), null, jsonTransaction);
                     producer.send(record, callback);
                 }
-                LOG.info("Beer Purchases Sent");
+                System.out.println("Beer Purchases Sent");
 
                 try {
                     Thread.sleep(5000);
@@ -99,7 +99,7 @@ public class MockDataProducer {
                     Thread.interrupted();
                 }
             }
-            LOG.info("Done generating beer purchases");
+            System.out.println("Done generating beer purchases");
 
         };
         executorService.submit(produceBeerSales);
@@ -125,7 +125,7 @@ public class MockDataProducer {
                     ProducerRecord<String, String> record = new ProducerRecord<>(STOCK_TRANSACTIONS_TOPIC, null, jsonTransaction);
                     producer.send(record, callback);
                 }
-                LOG.info("Stock Transactions Batch Sent");
+                System.out.println("Stock Transactions Batch Sent");
 
                 try {
                     Thread.sleep(5000);
@@ -133,7 +133,7 @@ public class MockDataProducer {
                     Thread.interrupted();
                 }
             }
-            LOG.info("Done generating stock data");
+            System.out.println("Done generating stock data");
 
         };
         executorService.submit(produceStockTransactionsTask);
@@ -152,7 +152,7 @@ public class MockDataProducer {
                 ProducerRecord<String, String> record = new ProducerRecord<>(STOCK_TRANSACTIONS_TOPIC, transaction.getSymbol(), jsonTransaction);
                 producer.send(record, callback);
             }
-            LOG.info("Stock Transactions for IQ Sent");
+            System.out.println("Stock Transactions for IQ Sent");
 
             try {
                 Thread.sleep(5000);
@@ -160,7 +160,7 @@ public class MockDataProducer {
                 Thread.interrupted();
             }
 
-            LOG.info("Done generating transactions for IQ");
+            System.out.println("Done generating transactions for IQ");
         }
     }
 
@@ -181,7 +181,7 @@ public class MockDataProducer {
                 producer.send(record, callback);
             }
 
-            LOG.info("Financial news sent");
+            System.out.println("Financial news sent");
             counter = 0;
             while (counter++ < numberIterations && keepRunning) {
                 List<StockTransaction> transactions = DataGenerator.generateStockTransactions(customers, companies, 50);
@@ -190,7 +190,7 @@ public class MockDataProducer {
                     ProducerRecord<String, String> record = new ProducerRecord<>(STOCK_TRANSACTIONS_TOPIC, keyFunction.apply(transaction), jsonTransaction);
                     producer.send(record, callback);
                 }
-                LOG.info("Stock Transactions Batch Sent");
+                System.out.println("Stock Transactions Batch Sent");
 
                 try {
                     Thread.sleep(5000);
@@ -198,7 +198,7 @@ public class MockDataProducer {
                     Thread.interrupted();
                 }
             }
-            LOG.info("Done generating stock data");
+            System.out.println("Done generating stock data");
 
         };
         executorService.submit(produceStockTransactionsTask);
@@ -222,14 +222,14 @@ public class MockDataProducer {
                     producer.send(record, callback);
                 }
 
-                LOG.info("Day Trading Click Events sent");
+                System.out.println("Day Trading Click Events sent");
                 List<StockTransaction> transactions = DataGenerator.generateStockTransactions(customers, companies, numClickEvents);
                 for (StockTransaction transaction : transactions) {
                     String jsonTransaction = convertToJson(transaction);
                     ProducerRecord<String, String> record = new ProducerRecord<>(STOCK_TRANSACTIONS_TOPIC, keyFunction.apply(transaction), jsonTransaction);
                     producer.send(record, callback);
                 }
-                LOG.info("Stock Transactions Batch Sent");
+                System.out.println("Stock Transactions Batch Sent");
 
                 try {
                     Thread.sleep(5000);
@@ -237,7 +237,7 @@ public class MockDataProducer {
                     Thread.interrupted();
                 }
             }
-            LOG.info("Done generating stock data");
+            System.out.println("Done generating stock data");
 
         };
         executorService.submit(produceStockTransactionsTask);
@@ -275,7 +275,7 @@ public class MockDataProducer {
             ProducerRecord<String, String> record = new ProducerRecord<>(FINANCIAL_NEWS, industry, news.get(counter++));
             producer.send(record, callback);
         }
-        LOG.info("Financial news sent");
+        System.out.println("Financial news sent");
     }
 
     private static List<DataGenerator.Customer> getCustomers(int numberCustomers) {
@@ -308,14 +308,14 @@ public class MockDataProducer {
 
                     company.updateStockPrice();
                 }
-                LOG.info("Stock updates sent");
+                System.out.println("Stock updates sent");
                 try {
                     Thread.sleep(4000);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             }
-            //LOG.info("Done generating StockTickerData Data");
+            //System.out.println("Done generating StockTickerData Data");
 
         };
         executorService.submit(generateTask);
@@ -341,21 +341,21 @@ public class MockDataProducer {
                     ProducerRecord<String, String> record = new ProducerRecord<>(YELLING_APP_TOPIC, null, value);
                     producer.send(record, callback);
                 }
-                LOG.info("Text batch sent");
+                System.out.println("Text batch sent");
                 try {
                     Thread.sleep(6000);
                 } catch (InterruptedException e) {
                     Thread.interrupted();
                 }
             }
-            LOG.info("Done generating text data");
+            System.out.println("Done generating text data");
 
         };
         executorService.submit(generateTask);
     }
 
     public static void shutdown() {
-        LOG.info("Shutting down data generation");
+        System.out.println("Shutting down data generation");
         keepRunning = false;
 
         if (executorService != null) {
@@ -371,7 +371,7 @@ public class MockDataProducer {
 
     private static void init() {
         if (producer == null) {
-            LOG.info("Initializing the producer");
+            System.out.println("Initializing the producer");
             Properties properties = new Properties();
             properties.put("bootstrap.servers", "localhost:9092");
             properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
@@ -386,7 +386,7 @@ public class MockDataProducer {
                     exception.printStackTrace();
                 }
             };
-            LOG.info("Producer initialized");
+            System.out.println("Producer initialized");
         }
     }
 

@@ -13,7 +13,6 @@ import org.slf4j.{Logger, LoggerFactory}
 
 
 object KStreamVsKTableExample {
-  val LOG: Logger = LoggerFactory.getLogger(KStreamVsKTableExample.getClass.getName)
   def main(args: Array[String]): Unit = {
     val builder = new StreamsBuilder()
     val consumed: Consumed[String, StockTickerData] =Consumed.`with`[String,StockTickerData](Serdes.stringSerde,StreamsSerdes.StockTickerSerde())
@@ -28,11 +27,11 @@ object KStreamVsKTableExample {
     MockDataProducer.produceStockTickerData(numberCompanies,iterations)
 
     val kafkaStreams = new KafkaStreams(builder.build(), new InitGetProperties("KStreamVSKTable_app").GetProperties)
-    LOG.info("KTable vs KStream output started")
+    System.out.println("KTable vs KStream output started")
     kafkaStreams.cleanUp()
     kafkaStreams.start()
     Thread.sleep(15000)
-    LOG.info("Shutting down KTable vs KStream Application now")
+    System.out.println("Shutting down KTable vs KStream Application now")
     kafkaStreams.close()
     MockDataProducer.shutdown()
 

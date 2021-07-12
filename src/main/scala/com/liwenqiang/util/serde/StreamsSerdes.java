@@ -24,6 +24,18 @@ public class StreamsSerdes {
         return new StockTransactionSerde();
     }
 
+
+    public static Serde<TransactionSummary> TransactionSummarySerde() {
+        return new TransactionSummarySerde();
+    }
+
+
+    public static final class TransactionSummarySerde extends Serdes.WrapperSerde<TransactionSummary> {
+        public TransactionSummarySerde() {
+            super(new JsonSerializer<>(), new JsonDeserializer<>(TransactionSummary.class));
+        }
+    }
+
     public static Serde<FixedSizePriorityQueue> FixedSizePriorityQueueSerde() {
         return new FixedSizePriorityQueueSerde();
     }
