@@ -49,14 +49,12 @@ object CountingWindowingAndKtableJoinExample {
 
     val financialNews: KTable[String, String] = builder.table("financial-news")(Consumed.`with`(AutoOffsetReset.EARLIEST))
 
-    val valueJoiner:ValueJoiner[TransactionSummary,String,String] = new ValueJoiner[TransactionSummary,String,String] {
-      override def apply(value1: TransactionSummary, value2: String): String = {
-        String.format(s"${value1.getSummaryCount} shares purchased ${value1.getSummaryCount} related news $value2")
-      }
-    }
-    val join = new Joined[String,TransactionSummary,String]
+    val joined: KStream[String, String] = countStream.leftJoin(financialNews)((t: TransactionSummary, s: String) => {
+      s"${t.getSummaryCount} shares purchased ${t.getSummaryCount} related news $s"
+    })(Joined.`with`(stringSerde, StreamsSerdes.TransactionSummarySerde, stringSerde))
 
 
+    joined.print(Printed.toSysOut[String,String].withLabel("Transactions and News"))
 
   }
 }
