@@ -36,14 +36,17 @@ object GlobalKTableExample {
       (newKey, transactionSummary)
     })
 
-    countStream.print(Printed.toSysOut[String, TransactionSummary].withLabel("foo-bar"))
-
     val publicCompanies: GlobalKTable[String, String] = builder.globalTable(Topics.COMPANIES.topicName())(Consumed.`with`(stringSerde, stringSerde))
     val clients: GlobalKTable[String, String] = builder.globalTable(Topics.CLIENTS.topicName())(Consumed.`with`(stringSerde, stringSerde))
-
     countStream.leftJoin(publicCompanies)((k: String, v: TransactionSummary)=>{
-
-    })
+      v.getStockTicker
+    },(k: TransactionSummary, v: String)=>{
+      k.withCompanyName(v)
+    }).leftJoin(clients)((k: String, v: TransactionSummary)=>{
+      v.getCustomerId
+    },(k: TransactionSummary, v: String)=>{
+      k.withCustomerName(v)
+    }).print(Printed.toSysOut[String, TransactionSummary].withLabel("foo-bar"))
 
     val kafkaStreams = new KafkaStreams(builder.build(), new InitGetProperties("GlobalKTableExample").GetProperties)
     kafkaStreams.cleanUp()
@@ -55,7 +58,7 @@ object GlobalKTableExample {
     println("Starting GlobalKTable Example")
     kafkaStreams.cleanUp()
     kafkaStreams.start()
-    Thread.sleep(65000)
+    Thread.sleep(1000)
     println("Shutting down the GlobalKTable Example Application now")
     kafkaStreams.close()
     MockDataProducer.shutdown()
