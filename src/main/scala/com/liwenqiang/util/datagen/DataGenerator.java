@@ -29,7 +29,9 @@ public class DataGenerator {
     private DataGenerator() {
     }
 
-
+    public static Supplier<Date> getTimestampGenerator(){
+        return timestampGenerator;
+    }
 
     public static void setTimestampGenerator(Supplier<Date> timestampGenerator) {
         DataGenerator.timestampGenerator = timestampGenerator;

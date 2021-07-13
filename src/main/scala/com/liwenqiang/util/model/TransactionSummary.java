@@ -44,7 +44,7 @@ public class TransactionSummary {
         return this;
     }
 
-    public String getCompmanyName() {
+    public String getCompanyName() {
         return companyName;
     }
 
