@@ -41,6 +41,18 @@ object PopsHopsApplication {
       purchaseProcessor,
       beerPurchaseProcessorSupplier,
       purchaseSourceNodeName
+    ).addSink(
+      internationalSalesSink,
+      "international-sales",
+      stringSerializer,
+      beerPurchaseSerializer,
+      purchaseProcessor
+    ).addSink(
+      domesticSalesSink,
+      "domestic-sales",
+      stringSerializer,
+      beerPurchaseSerializer,
+      purchaseProcessor
     )
 
 
