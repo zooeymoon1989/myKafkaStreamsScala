@@ -4,6 +4,7 @@ import com.liwenqiang.util.model.BeerPurchase;
 import com.liwenqiang.util.model.Currency;
 import org.apache.kafka.streams.processor.To;
 import org.apache.kafka.streams.processor.api.Processor;
+import org.apache.kafka.streams.processor.api.ProcessorContext;
 import org.apache.kafka.streams.processor.api.Record;
 import org.apache.kafka.streams.processor.internals.InternalProcessorContext;
 
@@ -13,7 +14,7 @@ import static com.liwenqiang.util.model.Currency.DOLLARS;
 
 public class BeerPurchaseProcessor implements Processor<String, BeerPurchase, String, BeerPurchase> {
 
-    private InternalProcessorContext context;
+    private ProcessorContext<String, BeerPurchase> context;
 
     private final String domesticSalesNode;
     private final String internationalSalesNode;
@@ -21,6 +22,12 @@ public class BeerPurchaseProcessor implements Processor<String, BeerPurchase, St
     public BeerPurchaseProcessor(String domesticSalesNode, String internationalSalesNode) {
         this.domesticSalesNode = domesticSalesNode;
         this.internationalSalesNode = internationalSalesNode;
+    }
+
+    @Override
+    public void init(ProcessorContext<String, BeerPurchase> context) {
+        Processor.super.init(context);
+        this.context = context;
     }
 
     @Override
@@ -35,9 +42,9 @@ public class BeerPurchaseProcessor implements Processor<String, BeerPurchase, St
             builder.currency(DOLLARS);
             builder.totalSale(Double.parseDouble(decimalFormat.format(purchaseCurrency.convertToDollars(totalSale))));
             dollarBeerPurchase = builder.build();
-            context.forward(record.key(), dollarBeerPurchase, To.child(internationalSalesNode));
+            context.forward(record, internationalSalesNode);
         }else{
-            context.forward(record.key(), purchaseCurrency, To.child(domesticSalesNode));
+            context.forward(record, domesticSalesNode);
         }
     }
 }
