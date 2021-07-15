@@ -1,11 +1,16 @@
 package com.liwenqiang.util.serde;
 
+import com.google.gson.reflect.TypeToken;
 import com.liwenqiang.collectors.FixedSizePriorityQueue;
+import com.liwenqiang.util.collection.Tuple;
 import com.liwenqiang.util.model.*;
 import com.liwenqiang.util.serializer.JsonDeserializer;
 import com.liwenqiang.util.serializer.JsonSerializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
+
+import java.lang.reflect.Type;
+import java.util.List;
 
 public class StreamsSerdes {
     public static Serde<PurchasePattern> PurchasePatternSerde() {
@@ -23,7 +28,27 @@ public class StreamsSerdes {
     public static Serde<StockTransaction> StockTransactionSerde() {
         return new StockTransactionSerde();
     }
+    public static Serde<Tuple<List<ClickEvent>, List<StockTransaction>>> EventTransactionTupleSerde() {
+        return new EventTransactionTupleSerde();
+    }
 
+    public static final class EventTransactionTupleSerde extends Serdes.WrapperSerde<Tuple<List<ClickEvent>, List<StockTransaction>>> {
+        private static final Type tupleType = new TypeToken<Tuple<List<ClickEvent>, List<StockTransaction>>>(){}.getType();
+        public EventTransactionTupleSerde() {
+            super(new JsonSerializer<>(), new JsonDeserializer<>(tupleType));
+        }
+    }
+
+    public static Serde<ClickEvent> ClickEventSerde() {
+        return new ClickEventSerde();
+    }
+
+
+    public static final class ClickEventSerde extends Serdes.WrapperSerde<ClickEvent> {
+        public ClickEventSerde () {
+            super(new JsonSerializer<>(), new JsonDeserializer<>(ClickEvent.class));
+        }
+    }
 
     public static Serde<TransactionSummary> TransactionSummarySerde() {
         return new TransactionSummarySerde();
