@@ -20,7 +20,6 @@ public class StockTransactionProcessor implements Processor<String, StockTransac
         String key = record.key();
         if (key != null) {
             Tuple<Object, StockTransaction> tuple = Tuple.of(null, record.value());
-            record.withKey(key);
             record.withValue(tuple);
             context.forward(record);
         }

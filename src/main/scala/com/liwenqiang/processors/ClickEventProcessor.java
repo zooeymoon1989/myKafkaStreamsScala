@@ -19,7 +19,6 @@ public class ClickEventProcessor implements Processor<String, ClickEvent, String
     public void process(Record<String, ClickEvent> record) {
         if (record.key() != null) {
             Tuple<ClickEvent, Object> tuple = Tuple.of(record.value(), null);
-            record.withKey(record.key());
             record.withValue(tuple);
             context.forward(record);
         }
