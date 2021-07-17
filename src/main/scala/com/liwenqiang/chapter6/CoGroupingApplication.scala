@@ -2,8 +2,8 @@ package com.liwenqiang.chapter6
 
 import com.liwenqiang.clients.producer.MockDataProducer
 import com.liwenqiang.config.initConfig.InitGetProperties
-import com.liwenqiang.processors.CogroupingProcessor
-import com.liwenqiang.processors.supplier.{ClickEventProcessorSupplier, CogroupingProcessorSupplier, StockTransactionProcessorSupplier}
+import com.liwenqiang.processors.{CogroupingProcessor, KStreamPrinter}
+import com.liwenqiang.processors.supplier.{ClickEventProcessorSupplier, CogroupingProcessorSupplier, KStreamPrinterSupplier, StockTransactionProcessorSupplier}
 import com.liwenqiang.util.collection.Tuple
 import com.liwenqiang.util.model.{ClickEvent, StockTransaction}
 import com.liwenqiang.util.serde.StreamsSerdes
@@ -30,7 +30,7 @@ object CoGroupingApplication {
 
     val topology = new Topology
 //    val changeLogConfigs: util.HashMap[String,String] = new util.HashMap()
-////    changeLogConfigs.put("retentions.ms","12000")
+//    changeLogConfigs.put("retentions.ms","12000")
 //    changeLogConfigs.put("cleanup.policy","compact.delete")
 
     val storeSupplier: KeyValueBytesStoreSupplier = Stores.persistentKeyValueStore(CogroupingProcessor.TUPLE_STORE_NAME)
@@ -72,6 +72,9 @@ object CoGroupingApplication {
       tupleSerializer,
       "CoGrouping-Processor"
     )
+
+    topology.addProcessor("Print",new KStreamPrinterSupplier,"CoGrouping-Processor")
+
 
     MockDataProducer.produceStockTransactionsAndDayTradingClickEvents(50,100,100,(v:StockTransaction)=>v.getSymbol)
     val kafkaStreams = new KafkaStreams(topology, new InitGetProperties("CoGroupingApplicationExample").GetProperties)

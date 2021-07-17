@@ -6,11 +6,11 @@ import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorContext;
 import org.apache.kafka.streams.processor.api.Record;
 
-public class StockTransactionProcessor implements Processor<String, StockTransaction, String, StockTransaction> {
-    private ProcessorContext<String, StockTransaction> context;
+public class StockTransactionProcessor implements Processor<String, StockTransaction, String, Tuple<Object, StockTransaction>> {
+    private ProcessorContext<String, Tuple<Object, StockTransaction>> context;
 
     @Override
-    public void init(ProcessorContext<String, StockTransaction> context) {
+    public void init(ProcessorContext<String, Tuple<Object, StockTransaction>> context) {
         Processor.super.init(context);
         this.context = context;
     }
@@ -20,8 +20,8 @@ public class StockTransactionProcessor implements Processor<String, StockTransac
         String key = record.key();
         if (key != null) {
             Tuple<Object, StockTransaction> tuple = Tuple.of(null, record.value());
-            record.withValue(tuple);
-            context.forward(record);
+            Record<String, Tuple<Object, StockTransaction>> newRecord = record.withValue(tuple);
+            context.forward(newRecord);
         }
     }
 

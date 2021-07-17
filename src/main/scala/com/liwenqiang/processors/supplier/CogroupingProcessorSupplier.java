@@ -7,7 +7,6 @@ import com.liwenqiang.util.model.StockTransaction;
 import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorSupplier;
 
-import java.util.List;
 
 public class CogroupingProcessorSupplier implements ProcessorSupplier<String, Tuple<ClickEvent, StockTransaction>, String, Tuple<ClickEvent, StockTransaction>> {
     @Override
