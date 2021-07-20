@@ -1,11 +1,14 @@
 package com.liwenqiang
 
+import com.liwenqiang.interceptors.ZMartProducerInterceptor
 import com.liwenqiang.joiner.PurchaseJoiner
 import com.liwenqiang.partitioner.RewardsStreamPartitioner
 import com.liwenqiang.supplier.PurchaseRewardTransformerSupplier
 import com.liwenqiang.util.model.{CorrelatedPurchase, Purchase, PurchasePattern, RewardAccumulator}
 import com.liwenqiang.util.serde.StreamsSerdes
 import com.liwenqiang.util.serializer.{JsonDeserializer, JsonSerializer}
+import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.{Serde, Serdes}
 import org.apache.kafka.streams.kstream.{Consumed, JoinWindows, KStream, KeyValueMapper, Predicate, Printed}
 import org.apache.kafka.streams.scala.kstream.{Branched, Produced, StreamJoined}
@@ -14,15 +17,19 @@ import org.apache.kafka.streams.state.{KeyValueBytesStoreSupplier, KeyValueStore
 
 import java.time.Duration
 import java.util
-import java.util.Properties
+import java.util.{Collections, Properties}
 
 object ZMartKafkaStreamsApp {
   def main(args: Array[String]): Unit = {
 
     val props: Properties = {
       val p = new Properties()
-      p.put(StreamsConfig.APPLICATION_ID_CONFIG, "ZMartKafkaStreamsApp")
+      p.put(StreamsConfig.CLIENT_ID_CONFIG, "zmart-metrics-client-id")
+      p.put(ConsumerConfig.GROUP_ID_CONFIG, "zmart-metrics-group-id")
+      p.put(StreamsConfig.APPLICATION_ID_CONFIG, "zmart-metrics-application-id")
+      p.put(StreamsConfig.METRICS_RECORDING_LEVEL_CONFIG, "DEBUG")
       p.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+      p.put(StreamsConfig.producerPrefix(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG), Collections.singletonList(classOf[ZMartProducerInterceptor]))
       p
     }
 
