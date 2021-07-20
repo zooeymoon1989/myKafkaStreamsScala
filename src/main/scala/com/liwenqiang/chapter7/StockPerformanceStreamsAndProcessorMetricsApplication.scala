@@ -50,7 +50,7 @@ object StockPerformanceStreamsAndProcessorMetricsApplication {
       val metric: Metric = v.getValue
       val metricName: MetricName = v.getKey
       if (!metric.metricValue().equals(0.0) && !metric.metricValue().equals(Double.NegativeInfinity)) {
-        println(s"MetricName ${metricName.name()}")
+        print(s"MetricName ${metricName.name()}")
         println(s"= ${metric.metricValue()}")
       }
 
