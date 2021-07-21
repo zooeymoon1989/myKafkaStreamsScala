@@ -1,17 +1,18 @@
 package com.liwenqiang.chapter8
 
-import com.liwenqiang.transformer.supplier.StockPerformanceMetricsTransformerSupplier
+import com.liwenqiang.transformer.supplier.{StockPerformanceMetricsTransformerSupplier, StockPerformanceTransformerSupplier}
 import org.apache.kafka.streams.scala.serialization.Serdes
 import com.liwenqiang.util.model.StockPerformance
 import com.liwenqiang.util.model.StockTransaction
 import com.liwenqiang.util.serde.StreamsSerdes
 import org.apache.kafka.common.serialization.Serde
+import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.scala.StreamsBuilder
-import org.apache.kafka.streams.scala.kstream.Consumed
+import org.apache.kafka.streams.scala.kstream.{Consumed, Produced}
 import org.apache.kafka.streams.state.{KeyValueBytesStoreSupplier, KeyValueStore, StoreBuilder, Stores}
 
 object StockPerformanceStreamsProcessorTopology {
-  def build() = {
+  def build(): Topology = {
 
     val stringSerde: Serde[String] = Serdes.stringSerde
     val stockPerformanceSerde: Serde[StockPerformance] = StreamsSerdes.StockPerformanceSerde
@@ -30,7 +31,10 @@ object StockPerformanceStreamsProcessorTopology {
     builder.addStateStore(storeBuilder)
 
     builder.stream("stock-transactions")(Consumed.`with`(stringSerde,stockTransactionSerde))
-      .transform(()->new StockPerformanceMetricsTransformerSupplier(stocksStateStore,differentialThreshold))
+      .transform(new StockPerformanceTransformerSupplier(stocksStateStore,differentialThreshold),stocksStateStore)
+      .to("stock-performance")(Produced.`with`(stringSerde,stockPerformanceSerde))
+
+    builder.build()
 
   }
 }
