@@ -2,12 +2,14 @@ package com.liwenqiang.chapter7
 
 import com.liwenqiang.clients.producer.MockDataProducer
 import com.liwenqiang.interceptors.ZMartProducerInterceptor
+import com.liwenqiang.restore.LoggingStateRestoreListener
 import com.liwenqiang.util.datagen.DataGenerator
 import com.liwenqiang.util.model.{Purchase, PurchasePattern, RewardAccumulator}
 import com.liwenqiang.util.serde.StreamsSerdes
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.Serde
+import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import org.apache.kafka.streams.{KafkaStreams, StreamsConfig, Topology}
 import org.apache.kafka.streams.scala.StreamsBuilder
 import org.apache.kafka.streams.scala.kstream.{Branched, Consumed, KStream, Produced}
@@ -56,6 +58,7 @@ object ZMartKafkaStreamsAdvancedReqsMetricsApp {
 
     val kafkaStreams = new KafkaStreams(topology, props)
 
+    // 设置状态监听器
     kafkaStreams.setStateListener((newState: KafkaStreams.State, oldState: KafkaStreams.State) => {
       if (newState == KafkaStreams.State.RUNNING && oldState == KafkaStreams.State.REBALANCING) {
         println("Application has gone from REBALANCING to RUNNING ")
@@ -66,6 +69,9 @@ object ZMartKafkaStreamsAdvancedReqsMetricsApp {
         println("Application is entering REBALANCING phase")
       }
     })
+
+    // 指定全局restore监听器
+    kafkaStreams.setGlobalStateRestoreListener(new LoggingStateRestoreListener)
 
     println("ZMart Advanced Requirements Metrics Application Started")
 
