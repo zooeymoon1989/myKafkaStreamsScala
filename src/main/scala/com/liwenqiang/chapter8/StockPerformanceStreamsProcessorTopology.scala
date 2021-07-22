@@ -30,9 +30,10 @@ object StockPerformanceStreamsProcessorTopology {
 
     builder.addStateStore(storeBuilder)
 
-    builder.stream("stock-transactions")(Consumed.`with`(stringSerde,stockTransactionSerde))
-      .transform(new StockPerformanceTransformerSupplier(stocksStateStore,differentialThreshold),stocksStateStore)
-      .to("stock-performance")(Produced.`with`(stringSerde,stockPerformanceSerde))
+    builder.stream("stock-transactions")(Consumed.`with`(stringSerde, stockTransactionSerde))
+      .selectKey((k: String, v: StockTransaction)=>v.getSymbol)
+      .transform(new StockPerformanceTransformerSupplier(stocksStateStore, differentialThreshold), stocksStateStore)
+      .to("stock-performance")(Produced.`with`(stringSerde, stockPerformanceSerde))
 
     builder.build()
 

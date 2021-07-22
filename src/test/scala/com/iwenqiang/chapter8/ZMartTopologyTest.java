@@ -12,7 +12,8 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -26,9 +27,8 @@ public class ZMartTopologyTest {
 
     private TopologyTestDriver topologyTestDriver;
 
-    @Test
-    @DisplayName("Testing the ZMart Topology Flow")
-    public void testZMartTopology() {
+    @BeforeEach
+    public void setUp(){
         Properties props = new Properties();
         props.put(StreamsConfig.CLIENT_ID_CONFIG, "FirstZmart-Kafka-Streams-Client");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "zmart-purchases");
@@ -37,6 +37,11 @@ public class ZMartTopologyTest {
         props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1);
         props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class);
         this.topologyTestDriver = new TopologyTestDriver(ZMartTopology.build(), props);
+    }
+
+    @Test
+    @DisplayName("Testing the ZMart Topology Flow")
+    public void testZMartTopology() {
 
         Serde<Purchase> purchaseSerde = StreamsSerdes.PurchaseSerde();
         Serde<PurchasePattern> purchasePatternSerde = StreamsSerdes.PurchasePatternSerde();
@@ -67,7 +72,7 @@ public class ZMartTopologyTest {
         System.out.println("Testing is done");
     }
 
-    @After
+    @AfterEach
     public void tearDown(){
         topologyTestDriver.close();
     }

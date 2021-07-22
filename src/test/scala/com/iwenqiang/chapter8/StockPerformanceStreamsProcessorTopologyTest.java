@@ -2,6 +2,7 @@ package com.iwenqiang.chapter8;
 
 import com.liwenqiang.chapter8.StockPerformanceStreamsProcessorTopology;
 import com.liwenqiang.util.datagen.DataGenerator;
+import com.liwenqiang.util.model.StockPerformance;
 import com.liwenqiang.util.model.StockTransaction;
 import com.liwenqiang.util.serde.StreamsSerdes;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -49,14 +50,14 @@ public class StockPerformanceStreamsProcessorTopologyTest {
         StockTransaction stockTransaction = DataGenerator.generateStockTransaction();
         TestInputTopic<String, StockTransaction> inputTopic = topologyTestDriver.createInputTopic("stock-transactions", stringSerde.serializer(), stockTransactionSerde.serializer());
         inputTopic.pipeInput(stockTransaction);
-        KeyValueStore<String, StockTransaction> store = topologyTestDriver.getKeyValueStore("stock-performance-store");
-        System.out.println(stockTransaction.getSymbol());
+        KeyValueStore<String, StockPerformance> store = topologyTestDriver.getKeyValueStore("stock-performance-store");
         assertThat(store.get(stockTransaction.getSymbol()),notNullValue());
 
-//        StockPerformance stockPerformance = store.get(stockTransaction.getSymbol());
-//
-//        assertThat(stockPerformance.getcurr);
+        StockPerformance stockPerformance = store.get(stockTransaction.getSymbol());
 
+        assertThat(stockPerformance.getCurrentShareVolume(),equalTo(stockTransaction.getShares()));
+        assertThat(stockPerformance.getCurrentPrice(),equalTo(stockTransaction.getSharePrice()));
+        System.out.println("Testing is done");
     }
 
 
