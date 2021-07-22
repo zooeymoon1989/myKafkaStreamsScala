@@ -10,7 +10,7 @@ libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.14.1" % Test,
   "org.apache.kafka" %% "kafka" % "2.8.0",
   "org.apache.kafka" % "kafka-clients" % "2.8.0",
-  "org.apache.kafka" % "kafka-streams" % "2.8.0" ,
+  "org.apache.kafka" % "kafka-streams" % "2.8.0" % Test,
   "org.apache.camel.kafkaconnector" % "camel-kafka-connector" % "0.10.1",
   "org.apache.kafka" % "connect-api" % "2.8.0",
   "org.apache.kafka" %% "kafka-streams-scala" % "2.8.0",
@@ -23,4 +23,5 @@ libraryDependencies ++= Seq(
   "org.hamcrest" % "hamcrest" % "2.2" % Test,
   "org.mockito" % "mockito-core" % "3.11.2" % Test,
   "org.mockito" % "mockito-junit-jupiter" % "3.11.2" % Test
+
 )
