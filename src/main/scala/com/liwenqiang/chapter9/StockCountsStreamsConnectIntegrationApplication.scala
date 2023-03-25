@@ -54,7 +54,6 @@ object StockCountsStreamsConnectIntegrationApplication {
       ()=>{
         println("Shutting down the Kafka Streams Application now")
         kafkaStreams.close()
-        MockDataProducer.shutdown()
         doneSignal.countDown()
       }
     ))

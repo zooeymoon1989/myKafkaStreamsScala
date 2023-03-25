@@ -14,6 +14,7 @@ import org.apache.kafka.streams.scala.serialization.Serdes
 import org.apache.kafka.streams.state.{KeyValueBytesStoreSupplier, KeyValueStore, StoreBuilder, Stores}
 
 import java.util.Properties
+import java.util.concurrent.CountDownLatch
 
 object StockPerformanceStreamsAndProcessorMetricsApplication {
   def main(args: Array[String]): Unit = {
@@ -34,7 +35,7 @@ object StockPerformanceStreamsAndProcessorMetricsApplication {
     builder.stream("stock-transactions")(Consumed.`with`(stringSerde,stockTransactionSerde))
       .transform(new StockPerformanceMetricsTransformerSupplier(stockStateStore,differentialThreshold),stockStateStore)
       .peek((k: String, v: StockPerformance)=>println(s"[stock-performance] key: $k value: $v"))
-      .to("stock-performance")(Produced.`with`(stringSerde,stockPerformanceSerde))
+      .to("gray-log")(Produced.`with`(stringSerde,stockPerformanceSerde))
 
     val kafkaStreams = new KafkaStreams(builder.build(), getProperties)
     MockDataProducer.produceStockTransactionsWithKeyFunction(50,50,25,(v:StockTransaction)=>v.getSymbol)
@@ -56,6 +57,17 @@ object StockPerformanceStreamsAndProcessorMetricsApplication {
 
     })
 
+
+    val doneSignal = new CountDownLatch(1)
+    Runtime.getRuntime.addShutdownHook(new Thread(
+      ()=>{
+        println("Shutting down the Kafka Streams Application now")
+        kafkaStreams.close()
+        MockDataProducer.shutdown()
+        doneSignal.countDown()
+      }
+    ))
+    doneSignal.await()
     kafkaStreams.close()
     MockDataProducer.shutdown()
 
@@ -68,9 +80,9 @@ object StockPerformanceStreamsAndProcessorMetricsApplication {
     import java.util.Collections
     val props = new Properties
     props.put(StreamsConfig.CLIENT_ID_CONFIG, "ks-stats-stock-analysis-client")
-    props.put(ConsumerConfig.GROUP_ID_CONFIG, "ks-stats-stock-analysis-group")
+    props.put(ConsumerConfig.GROUP_ID_CONFIG, "console-consumer-20607")
     props.put(StreamsConfig.APPLICATION_ID_CONFIG, "ks-stats-stock-analysis-appid")
-    props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+    props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "10.3.250.19:9092,10.3.250.31:9092,10.3.250.32:9092")
     props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1)
     props.put(StreamsConfig.METRICS_RECORDING_LEVEL_CONFIG, "DEBUG")
     props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.stringSerde.getClass.getName)

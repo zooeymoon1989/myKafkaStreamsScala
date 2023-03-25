@@ -13,7 +13,7 @@ class InitGetProperties(appName: String) {
     props.put(ConsumerConfig.GROUP_ID_CONFIG, "join_driver_group")
     props.put(ConsumerConfig.CLIENT_ID_CONFIG, "join_driver_client")
     props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest")
-    props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+    props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "10.3.250.19:9092,10.3.250.31:9092,10.3.250.32:9092")
     props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, "1")
     props.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, "10000")
     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
