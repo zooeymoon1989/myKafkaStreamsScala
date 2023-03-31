@@ -2,7 +2,7 @@ name := "myKafkaStreams"
 
 version := "0.1"
 
-scalaVersion := "3.2.2"
+scalaVersion := "2.13.10"
 
 libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-core" % "2.20.0",
@@ -12,8 +12,8 @@ libraryDependencies ++= Seq(
   "org.apache.kafka" % "kafka-clients" % "3.4.0",
   "org.apache.kafka" % "kafka-streams" % "3.4.0",
   "org.apache.camel.kafkaconnector" % "camel-kafka-connector" % "0.10.1",
-  "org.apache.kafka" % "connect-api" % "2.8.0",
-  "org.apache.kafka" %% "kafka-streams-scala" % "2.8.0",
+  "org.apache.kafka" % "connect-api" % "3.4.0",
+  "org.apache.kafka" %% "kafka-streams-scala" % "3.4.0",
   "com.google.code.gson" % "gson" % "2.10.1",
   "org.slf4j" % "slf4j-log4j12" % "2.0.7" ,
   "org.slf4j" % "slf4j-simple" % "2.0.7",
